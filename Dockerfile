@@ -9,4 +9,8 @@ RUN pip3 install -r requirements.txt
 
 COPY ./app ./app
 
+COPY ./templates ./templates
+
+COPY ./test ./test
+
 CMD [ "python", "app/main.py"] #tell Docker what command we want to run when our image is executed inside a containermake the application externally visible (i.e. from outside the container) by specifying --host=0.0.0.0.
