@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM python:3.8-slim-buster
+FROM python:3.8-slim-buster #base image: the official Python image that already has all the tools and packages that we need to run a Python application.
 
 WORKDIR /fastapi-app #set working directory to relative path
 
