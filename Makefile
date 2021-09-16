@@ -5,7 +5,7 @@ install:
 
 
 lint:
-	pylint --disable=R,C app/main.py
+	pylint --disable=R,C app.py
 
 format:
 	black *.py
