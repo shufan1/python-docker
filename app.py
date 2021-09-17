@@ -48,7 +48,29 @@ def db_init():
     
     return 'init database'
 
+@app.route('/widgets')
+def get_widgets() :
+  mydb = mysql.connector.connect(
+    host="mysqldb",
+    user="root",
+    password="p@ssword1",
+    database="inventory"
+  )
+  cursor = mydb.cursor()
 
+
+  cursor.execute("SELECT * FROM widgets")
+
+  row_headers=[x[0] for x in cursor.description] #this will extract row headers
+
+  results = cursor.fetchall()
+  json_data=[]
+  for result in results:
+    json_data.append(dict(zip(row_headers,result)))
+
+  cursor.close()
+
+  return json.dumps(json_data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=8080)
