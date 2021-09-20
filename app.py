@@ -43,9 +43,9 @@ def db_init():
     cursor = mydb.cursor()
     
     cursor.execute("DROP TABLE IF EXISTS cities")
-    cursor.execute("CREATE TABLE cities (name VARCHAR(255), long_and_lat VARCHAR(255))")
-    cursor.execute("INSERT INTO cities VALUES ('San Francisco', '(-194.0, 53.0)')")
-    cursor.execute("INSERT INTO cities VALUES ('Springfield',	'(39.8,	-89.7)')")
+    cursor.execute("CREATE TABLE cities (name VARCHAR(255), long_and_lat VARCHAR(255));")
+    cursor.execute("INSERT INTO cities VALUES ('San Francisco', '(-194.0, 53.0)');")
+    cursor.execute("INSERT INTO cities VALUES ('Springfield',	'(39.8,	-89.7);')")
     cursor.close()
     
     return 'init database'
@@ -59,9 +59,34 @@ def get_cities() :
     database="location"
   )
   cursor = mydb.cursor()
-
-
+  
+  
   cursor.execute("SELECT * FROM cities")
+  
+  row_headers=[x[0] for x in cursor.description] #this will extract row headers
+  
+  results = cursor.fetchall()
+  json_data=[]
+  for result in results:
+    json_data.append(dict(zip(row_headers,result)))
+  
+  cursor.close()
+  
+  return json.dumps(json_data)
+  
+  
+@app.route('/timezones')
+def get_timezones() :
+  mydb = mysql.connector.connect(
+    host="mysqldb",
+    user="root",
+    password="p@ssword1",
+    database="mysql"
+  )
+  cursor = mydb.cursor()
+
+
+  cursor.execute("SELECT * FROM time_zone_name LIMIT 10;")
 
   row_headers=[x[0] for x in cursor.description] #this will extract row headers
 
