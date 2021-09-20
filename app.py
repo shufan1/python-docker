@@ -21,7 +21,7 @@ def hello(name=None):
 
 @app.route('/initdb')
 def db_init():
-    # make Database: inventory
+    # make Database: location
     mydb = mysql.connector.connect(
     host="mysqldb",
     user="root",
@@ -29,37 +29,39 @@ def db_init():
     )
     cursor = mydb.cursor()
     
-    cursor.execute("DROP DATABASE IF EXISTS inventory")
-    cursor.execute("CREATE DATABASE inventory")
+    cursor.execute("DROP DATABASE IF EXISTS location")
+    cursor.execute("CREATE DATABASE location")
     cursor.close()
     
-    #make Table: widegts 
+    #make Table: cities 
     mydb = mysql.connector.connect(
     host="mysqldb",
     user="root",
     password="p@ssword1",
-    database="inventory"
+    database="location"
     )
     cursor = mydb.cursor()
     
-    cursor.execute("DROP TABLE IF EXISTS widgets")
-    cursor.execute("CREATE TABLE widgets (name VARCHAR(255), description VARCHAR(255))")
+    cursor.execute("DROP TABLE IF EXISTS cities")
+    cursor.execute("CREATE TABLE cities (name VARCHAR(255), long_and_lat VARCHAR(255))")
+    cursor.execute("INSERT INTO cities VALUES ('San Francisco', '(-194.0, 53.0)')")
+    cursor.execute("INSERT INTO cities VALUES ('Springfield',	'(39.8,	-89.7)')")
     cursor.close()
     
     return 'init database'
 
-@app.route('/widgets')
-def get_widgets() :
+@app.route('/cities')
+def get_cities() :
   mydb = mysql.connector.connect(
     host="mysqldb",
     user="root",
     password="p@ssword1",
-    database="inventory"
+    database="location"
   )
   cursor = mydb.cursor()
 
 
-  cursor.execute("SELECT * FROM widgets")
+  cursor.execute("SELECT * FROM cities")
 
   row_headers=[x[0] for x in cursor.description] #this will extract row headers
 
