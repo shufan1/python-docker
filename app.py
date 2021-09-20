@@ -45,7 +45,7 @@ def db_init():
     cursor.execute("DROP TABLE IF EXISTS cities")
     cursor.execute("CREATE TABLE cities (name VARCHAR(255), long_and_lat VARCHAR(255));")
     cursor.execute("INSERT INTO cities VALUES ('San Francisco', '(-194.0, 53.0)');")
-    cursor.execute("INSERT INTO cities VALUES ('Springfield',	'(39.8,	-89.7);')")
+    cursor.execute("INSERT INTO cities VALUES ('Springfield',	'(39.8,	-89.7)');")
     cursor.close()
     
     return 'init database'
