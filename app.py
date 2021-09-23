@@ -19,7 +19,7 @@ def hello(name=None):
     ID = np.random.randint(100)
     return render_template('hello.html', name = name, ID = ID)
 
-@app.route('/initcitydb')
+@app.route('/initcitybikedb')
 def db_init():
     # make Database: location
     mydb = mysql.connector.connect(
@@ -41,27 +41,18 @@ def db_init():
     database="location"
     )
     cursor = mydb.cursor()
-    cursor.execute("DROP TABLE IF EXISTS cities")
-    cursor.execute("CREATE TABLE cities (name VARCHAR(255), long_and_lat VARCHAR(255));")
-    cursor.execute("INSERT INTO cities (name,long_and_lat) VALUES ('San Francisco', '(-194.0, 53.0)');")
-    print("here2")
-    cursor.execute("INSERT INTO cities (name,long_and_lat) VALUES ('Springfield',	'(39.8,	-89.7)');")
-    
-    cursor.execute("SELECT * FROM cities;")
-    
-    row_headers=[x[0] for x in cursor.description]  
-    results = cursor.fetchall()
-    json_data=[]
-    for result in results:
-      json_data.append(dict(zip(row_headers,result)))
-    
+    cursor.execute("DROP TABLE IF EXISTS citybike")
+    cursor.execute("CREATE TABLE citybike (name VARCHAR(255), bicycle_friendly VARCHAR(255));")
+    cursor.execute("INSERT INTO citybike (name,bicycle_friendly) VALUES ('San Francisco', 'No');")
+    cursor.execute("INSERT INTO citybike (name,bicycle_friendly) VALUES ('Springfield',	'No');")
+    mydb.commit()
     cursor.close()
     
-    return json.dumps(json_data)
+    return "initdb"
       
 
-@app.route('/cities')
-def get_cities() :
+@app.route('/citybike')
+def get_citybike() :
   mydb = mysql.connector.connect(
     host="mysqldb",
     user="root",
@@ -69,22 +60,18 @@ def get_cities() :
     database="location"
   )
   cursor = mydb.cursor()
-  cursor.execute("SELECT * FROM cities;")
-  
-
+  cursor.execute("SELECT * FROM citybike;")
   row_headers=[x[0] for x in cursor.description] #this will extract row headers
-  
   results = cursor.fetchall()
   json_data=[]
   for result in results:
     json_data.append(dict(zip(row_headers,result)))
-  
   cursor.close()
   
   return json.dumps(json_data)
 
-@app.route('/addcity/<city>/<long>/<lat>')
-def add_city(city=None, long=None,lat=None):
+@app.route('/addcity/<city>/<bicycle_friendly>')
+def add_city(city=None, bicycle_friendly=None):
   mydb = mysql.connector.connect(
     host="mysqldb",
     user="root",
@@ -92,13 +79,10 @@ def add_city(city=None, long=None,lat=None):
     database="location"
   )
   
-  long_and_lat ="("+str(long)+","+ str(lat)+")"
-  
   cursor = mydb.cursor()
-  cursor.execute("INSERT INTO cities (name,long_and_lat) VALUES ('{0}', '{1}');".format(city,long_and_lat))
-  cursor.close()
-  return '{"new entry":[{"city":{0},"long_lat":{1}}]}'.format(city,long_and_lat)
-    
+  cursor.execute("INSERT INTO citybike (name,bicycle_friendly) VALUES ('{0}', '{1}');".format(city,bicycle_friendly))
+  mydb.commit()
+  return "%s added"%city
   
   
 @app.route('/timezones')
@@ -110,17 +94,13 @@ def get_timezones() :
     database="mysql"
   )
   cursor = mydb.cursor()
-
-
   cursor.execute("SELECT * FROM time_zone_name LIMIT 10;")
 
   row_headers=[x[0] for x in cursor.description] #this will extract row headers
-
   results = cursor.fetchall()
   json_data=[]
   for result in results:
     json_data.append(dict(zip(row_headers,result)))
-
   cursor.close()
 
   return json.dumps(json_data)
