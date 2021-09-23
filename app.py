@@ -7,7 +7,7 @@ import numpy as np
 app = Flask(__name__)
 
 @app.route('/')
-def root(name=None):
+def root():
     message = "Welcome, you are at the home page"
     return render_template('page.html', welcome=message)
     
