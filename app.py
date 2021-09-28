@@ -6,9 +6,8 @@ import numpy as np
 
 app = Flask(__name__)
 
-
 @app.route('/')
-def root(name=None):
+def root():
     message = "Welcome, you are at the home page"
     return render_template('page.html', welcome=message)
     
@@ -19,7 +18,7 @@ def hello(name=None):
     ID = np.random.randint(100)
     return render_template('hello.html', name = name, ID = ID)
 
-@app.route('/initdb')
+@app.route('/initcitybikedb')
 def db_init():
     # make Database: location
     mydb = mysql.connector.connect(
@@ -28,7 +27,7 @@ def db_init():
     password="p@ssword1"
     )
     cursor = mydb.cursor()
-    
+    print("here")
     cursor.execute("DROP DATABASE IF EXISTS location")
     cursor.execute("CREATE DATABASE location")
     cursor.close()
@@ -41,63 +40,71 @@ def db_init():
     database="location"
     )
     cursor = mydb.cursor()
-    
-    cursor.execute("DROP TABLE IF EXISTS cities")
-    cursor.execute("CREATE TABLE cities (name VARCHAR(255), long_and_lat VARCHAR(255));")
-    cursor.execute("INSERT INTO cities VALUES ('San Francisco', '(-194.0, 53.0)');")
-    cursor.execute("INSERT INTO cities VALUES ('Springfield',	'(39.8,	-89.7);')")
+    cursor.execute("DROP TABLE IF EXISTS citybike")
+    cursor.execute("CREATE TABLE citybike (name VARCHAR(255), bicycle_friendly VARCHAR(255));")
+    cursor.execute("INSERT INTO citybike (name,bicycle_friendly) VALUES ('San Francisco', 'No');")
+    cursor.execute("INSERT INTO citybike (name,bicycle_friendly) VALUES ('Springfield',	'No');")
+    mydb.commit()
     cursor.close()
     
-    return 'init database'
+    return "initdb"
+        
 
-@app.route('/cities')
-def get_cities() :
-  mydb = mysql.connector.connect(
-    host="mysqldb",
-    user="root",
-    password="p@ssword1",
-    database="location"
-  )
-  cursor = mydb.cursor()
-  
-  
-  cursor.execute("SELECT * FROM cities")
-  
-  row_headers=[x[0] for x in cursor.description] #this will extract row headers
-  
-  results = cursor.fetchall()
-  json_data=[]
-  for result in results:
-    json_data.append(dict(zip(row_headers,result)))
-  
-  cursor.close()
-  
-  return json.dumps(json_data)
-  
-  
+@app.route('/citybike')
+def get_citybike() :
+    mydb = mysql.connector.connect(
+        host="mysqldb",
+        user="root",
+        password="p@ssword1",
+        database="location"
+    )
+    cursor = mydb.cursor()
+    cursor.execute("SELECT * FROM citybike;")
+    row_headers=[x[0] for x in cursor.description] #this will extract row headers
+    results = cursor.fetchall()
+    json_data=[]
+    for result in results:
+        json_data.append(dict(zip(row_headers,result)))
+    cursor.close()
+    
+    return json.dumps(json_data)
+
+@app.route('/addcity/<city>/<bicycle_friendly>')
+def add_city(city=None, bicycle_friendly=None):
+    mydb = mysql.connector.connect(
+        host="mysqldb",
+        user="root",
+        password="p@ssword1",
+        database="location"
+    )
+    
+    cursor = mydb.cursor()
+    cursor.execute("INSERT INTO citybike (name,bicycle_friendly) VALUES ('{0}', '{1}');".format(city,bicycle_friendly))
+    mydb.commit()
+    return "%s added"%city
+    
+        
+    
+    
 @app.route('/timezones')
 def get_timezones() :
-  mydb = mysql.connector.connect(
+    mydb = mysql.connector.connect(
     host="mysqldb",
     user="root",
     password="p@ssword1",
     database="mysql"
-  )
-  cursor = mydb.cursor()
+    )
+    cursor = mydb.cursor()
+    cursor.execute("SELECT * FROM time_zone_name LIMIT 10;")
 
+    row_headers=[x[0] for x in cursor.description] #this will extract row headers
+    results = cursor.fetchall()
+    json_data=[]
+    for result in results:
+        json_data.append(dict(zip(row_headers,result)))
+    cursor.close()
 
-  cursor.execute("SELECT * FROM time_zone_name LIMIT 10;")
-
-  row_headers=[x[0] for x in cursor.description] #this will extract row headers
-
-  results = cursor.fetchall()
-  json_data=[]
-  for result in results:
-    json_data.append(dict(zip(row_headers,result)))
-
-  cursor.close()
-
-  return json.dumps(json_data)
+    return json.dumps(json_data)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0',port=8080)
